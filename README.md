@@ -97,7 +97,7 @@ Preparar destinatários sem duplicação → enviar e-mails
 7. Teste o D9 com uma nova solicitação e com uma solicitação duplicada; depois teste o D10 alterando o status de um cartão.
 8. Verifique os resultados na planilha e os e-mails antes de ativar os workflows.
 
-> **Atenção:** os JSONs foram preparados para divulgação e **não foram validados por uma importação e execução completas após a sanitização**. Configurações dependentes do ambiente devem ser revisadas. Não utilize dados reais de clientes nos testes.
+>> **Atenção:** os dois workflows foram importados com sucesso no n8n após a sanitização, com nodes e conexões preservados. A execução funcional completa das versões públicas ainda não foi validada. É necessário configurar credenciais, identificadores e demais parâmetros do ambiente antes de executar. Utilize apenas dados fictícios nos testes.
 
 ## Regras e limitações
 
