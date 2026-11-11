@@ -1,0 +1,1237 @@
+{
+  "name": "Bootcamp D9 - Central de Manutenção | Abertura de Solicitações",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Solicitação de Manutenção",
+        "formDescription": "Registre problemas identificados nos equipamentos da sua unidade.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Unidade Solicitante",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "UN-001 - Matriz São Paulo"
+                  },
+                  {
+                    "option": "UN-002 - Filial Campinas"
+                  },
+                  {
+                    "option": "UN-003 - Filial Santos"
+                  },
+                  {
+                    "option": "UN-004 - Centro de Distribuição Guarulhos"
+                  },
+                  {
+                    "option": "UN-005 - Filial Sorocaba"
+                  },
+                  {
+                    "option": "UN-006 - Filial São José dos Campos"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Nome do Solicitante",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "E-mail do Solicitante",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Código do Equipamento",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "EQ-101 - Câmara frigorífica (UN-001)"
+                  },
+                  {
+                    "option": "EQ-102 - Gerador elétrico (UN-001)"
+                  },
+                  {
+                    "option": "EQ-103 - Sistema de climatização (UN-002)"
+                  },
+                  {
+                    "option": "EQ-104 - Compressor industrial (UN-003)"
+                  },
+                  {
+                    "option": "EQ-105 - Esteira transportadora (UN-004)"
+                  },
+                  {
+                    "option": "EQ-106 - Painel elétrico (UN-005)"
+                  },
+                  {
+                    "option": "EQ-107 - Sistema de refrigeração (UN-006)"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Tipo de Problema",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "234 - Falha elétrica"
+                  },
+                  {
+                    "option": "789 - Falha no compressor"
+                  },
+                  {
+                    "option": "345 - Falha mecânica"
+                  },
+                  {
+                    "option": "456 - Vazamento"
+                  },
+                  {
+                    "option": "567 - Superaquecimento"
+                  },
+                  {
+                    "option": "678 - Falha de comunicação"
+                  },
+                  {
+                    "option": "890 - Falha no painel de controle"
+                  },
+                  {
+                    "option": "999 - Outros"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Descrição do Problema",
+              "fieldType": "textarea",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Impacto Operacional",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Operação totalmente parada"
+                  },
+                  {
+                    "option": "Operação parcialmente comprometida"
+                  },
+                  {
+                    "option": "Operação funcionando com restrições"
+                  },
+                  {
+                    "option": "Sem impacto imediato"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8c391209-3f4d-4599-932a-54be49691659",
+      "name": "On form submission"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2e292097-eec5-4477-ab32-245b8dae7ce2",
+              "leftValue": "={{ $json[\"Unidade Solicitante\"].split(\" - \")[0] }}",
+              "rightValue": "={{ $json[\"Código do Equipamento\"].match(/\\((UN-\\d+)\\)/)?.[1] ?? \"\" }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        0
+      ],
+      "id": "7c5cafb9-3ff2-4876-b077-a2dcc5ed32cb",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3ae5c903-08fb-4335-8c47-5fdae8c6c109",
+              "name": "unidade_id",
+              "value": "={{ $json[\"Unidade Solicitante\"].split(\" - \")[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "c21e590d-0c4b-4d04-9da8-adae7975762d",
+              "name": "equipamento_id",
+              "value": "={{ $json[\"Código do Equipamento\"].split(\" - \")[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "651bc230-39f4-4597-b0c4-6d63a28ceac8",
+              "name": "problema_id",
+              "value": "={{ $json[\"Tipo de Problema\"].split(\" - \")[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "1e76633f-4f70-4a32-8c8c-3e32e5993bdc",
+              "name": "impacto",
+              "value": "={{ $json[\"Impacto Operacional\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "3eb1dd19-a829-452a-b736-8660ad2888d6",
+              "name": "status",
+              "value": "A Fazer",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        464,
+        -176
+      ],
+      "id": "37beb048-34b8-4ae9-a881-2b7943a01d00",
+      "name": "Preparar Dados da Solicitação"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "CONFIGURAR_ID_DA_PLANILHA",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        848,
+        -176
+      ],
+      "id": "587981d2-c438-4628-a4f9-447325ea811a",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst solicitacao = $('Classificar Prioridade').first().json;\n\nconst registros = $input.all()\n  .map(item => item.json)\n  .filter(registro => registro.equipamento_id);\n\nconst duplicata = registros.find(registro =>\n  registro.equipamento_id === solicitacao.equipamento_id &&\n  String(registro.problema_id).trim() === String(solicitacao.problema_id).trim() &&\n  registro.status !== 'Concluída'\n);\n\nreturn [{\n  json: {\n    ...solicitacao,\n    duplicado: Boolean(duplicata),\n    solicitacao_existente: duplicata?.solicitacao_id ?? null\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        -176
+      ],
+      "id": "44407024-5ee2-4369-b4f4-cb6d411a9b4f",
+      "name": "Verificar Duplicidade"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "716e982c-0bb2-4649-9140-39c779167497",
+              "name": "prioridade",
+              "value": "={{ $json.impacto === \"Operação totalmente parada\" ? \"Crítica\" : $json.impacto === \"Operação parcialmente comprometida\" ? \"Alta\" : \"Normal\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        656,
+        -176
+      ],
+      "id": "34da661b-c132-4533-8beb-706160539657",
+      "name": "Classificar Prioridade"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0e3aa703-b3b0-4151-bd64-681836c56402",
+              "leftValue": "={{ $json.duplicado }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1248,
+        -176
+      ],
+      "id": "682a7eed-4ad6-46ea-b0d8-ef87e2cc6e06",
+      "name": "Solicitação Duplicada?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cda409b8-c760-4c28-a80e-ba370a341759",
+              "name": "resultado",
+              "value": "DUPLICADA",
+              "type": "string"
+            },
+            {
+              "id": "74f7df37-0b51-4856-9391-312b61072140",
+              "name": "solicitacao_existente",
+              "value": "={{ $json.solicitacao_existente }}",
+              "type": "string"
+            },
+            {
+              "id": "b90e964a-99ba-4c26-b706-96af1d59b9cc",
+              "name": "equipamento_id",
+              "value": "={{ $json.equipamento_id }}",
+              "type": "string"
+            },
+            {
+              "id": "4954fed5-2b20-496a-a86f-a5bf3db8c085",
+              "name": "problema_id",
+              "value": "={{ $json.problema_id }}",
+              "type": "string"
+            },
+            {
+              "id": "682ecf2d-021a-48cd-bed4-a97e331a3273",
+              "name": "mensagem",
+              "value": "Já existe uma solicitação aberta para este equipamento e problema.",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1440,
+        -336
+      ],
+      "id": "4b70472c-28d3-467a-925c-f6d9e8357433",
+      "name": "Registrar Solicitação Duplicada"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json[\"E-mail do Solicitante\"] }}",
+        "subject": "={{ 'Solicitação já existente — ' + $json.solicitacao_existente }}",
+        "message": "=<h2>Central de Manutenção</h2>  <p>Olá, {{ $json[\"Nome do Solicitante\"] }}!</p>  <p>Identificamos que já existe uma solicitação em aberto para o equipamento e problema informados.</p>  <p><strong>Solicitação existente:</strong> {{ $json.solicitacao_existente }}</p>  <p><strong>Equipamento:</strong> {{ $json.equipamento_id }}</p>  <p><strong>Código do problema:</strong> {{ $json.problema_id }}</p>  <p><strong>Status:</strong> A solicitação anterior permanece em acompanhamento.</p>  <p>Para evitar registros duplicados, não abrimos uma nova solicitação.</p>  <p>Você receberá atualizações sobre o andamento do chamado existente.</p>  <hr>  <p><small>Mensagem automática — Central de Manutenção</small></p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1648,
+        -336
+      ],
+      "id": "386aebba-860c-4f17-b39f-d023e897fb09",
+      "name": "Notificar Solicitação Duplicada"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "CONFIGURAR_ID_DA_PLANILHA",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1298772827,
+          "mode": "list"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "solicitacao_id",
+              "lookupValue": "={{ $('Verificar Duplicidade').first().json.solicitacao_existente }}"
+            },
+            {
+              "lookupColumn": "email",
+              "lookupValue": "={{ $('Registrar Solicitação Duplicada').first().json[\"E-mail do Solicitante\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1856,
+        -336
+      ],
+      "id": "4168c2b3-1b92-46b3-856b-10ff332ff4fb",
+      "name": "Consultar Interessado Existente",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ab66781a-2fa5-4709-900b-1cad7fec5d0f",
+              "leftValue": "={{ $json.email ?? '' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2080,
+        -336
+      ],
+      "id": "77abc878-cda0-4e1c-9042-302d65c7d1a3",
+      "name": "Interessado Já Cadastrado?",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "CONFIGURAR_ID_DA_PLANILHA",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1298772827,
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "solicitacao_id": "={{ $('Verificar Duplicidade').first().json.solicitacao_existente }}",
+            "email": "={{ $('Verificar Duplicidade').first().json['E-mail do Solicitante'] }}",
+            "nome": "={{ $('Verificar Duplicidade').first().json['Nome do Solicitante'] }}",
+            "data_inscricao": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "solicitacao_id",
+              "displayName": "solicitacao_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "data_inscricao",
+              "displayName": "data_inscricao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2304,
+        -240
+      ],
+      "id": "3fb91a04-e20b-4061-854d-f7cb8aa578af",
+      "name": "Append row in sheet"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst solicitacao = $input.first().json;\n\nconst id = `SOL-${$execution.id}-${Date.now()}`;\n\nconst agora = new Date().toISOString();\n\nreturn [{\n  json: {\n    ...solicitacao,\n    solicitacao_id: id,\n    data_abertura: agora,\n    data_atualizacao: agora,\n    status: 'A Fazer'\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        -32
+      ],
+      "id": "ea4ab8cb-ab9c-4230-8a07-b98de8382c1e",
+      "name": "Gerar ID da Solicitação"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "CONFIGURAR_ID_DA_PLANILHA",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "solicitacao_id": "={{ $json.solicitacao_id }}",
+            "unidade_id": "={{ $json.unidade_id }}",
+            "equipamento_id": "={{ $json.equipamento_id }}",
+            "problema_id": "={{ $json.problema_id }}",
+            "descricao_problema": "={{ $json['Descrição do Problema'] }}",
+            "nome_solicitante": "={{ $json['Nome do Solicitante'] }}",
+            "email_solicitante": "={{ $json['E-mail do Solicitante'] }}",
+            "impacto": "={{ $json.impacto }}",
+            "prioridade": "={{ $json.prioridade }}",
+            "status": "={{ $json.status }}",
+            "data_abertura": "={{ $json.data_abertura }}",
+            "data_atualizacao": "={{ $json.data_atualizacao }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "solicitacao_id",
+              "displayName": "solicitacao_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "unidade_id",
+              "displayName": "unidade_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "equipamento_id",
+              "displayName": "equipamento_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "problema_id",
+              "displayName": "problema_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "descricao_problema",
+              "displayName": "descricao_problema",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "nome_solicitante",
+              "displayName": "nome_solicitante",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email_solicitante",
+              "displayName": "email_solicitante",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "impacto",
+              "displayName": "impacto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "prioridade",
+              "displayName": "prioridade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "data_abertura",
+              "displayName": "data_abertura",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "data_atualizacao",
+              "displayName": "data_atualizacao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "responsavel",
+              "displayName": "responsavel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "resultado_processamento",
+              "displayName": "resultado_processamento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "observacoes",
+              "displayName": "observacoes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1648,
+        -32
+      ],
+      "id": "e641829e-df3f-40f0-af25-3c5e9eb92f56",
+      "name": "Append row in sheet1"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Gerar ID da Solicitação').first().json['E-mail do Solicitante'] }}",
+        "subject": "={{ 'Solicitação aberta — ' + $('Gerar ID da Solicitação').first().json.solicitacao_id }}",
+        "message": "=<h2>Central de Manutenção</h2>  <p>Olá, {{ $('Gerar ID da Solicitação').first().json['Nome do Solicitante'] }}!</p>  <p>Sua solicitação de manutenção foi registrada com sucesso.</p>  <p><strong>Protocolo:</strong> {{ $('Gerar ID da Solicitação').first().json.solicitacao_id }}</p>  <p><strong>Equipamento:</strong> {{ $('Gerar ID da Solicitação').first().json.equipamento_id }}</p>  <p><strong>Problema:</strong> {{ $('Gerar ID da Solicitação').first().json['Tipo de Problema'] }}</p>  <p><strong>Prioridade:</strong> {{ $('Gerar ID da Solicitação').first().json.prioridade }}</p>  <p><strong>Status:</strong> A Fazer</p>  <p>Você receberá atualizações quando houver mudanças no andamento da solicitação.</p>  <hr> <p>Mensagem automática — Central de Manutenção</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2496,
+        -32
+      ],
+      "id": "c82f36ef-880a-47c7-88d1-31642677a490",
+      "name": "Confirmar Abertura da Solicitação"
+    },
+    {
+      "parameters": {
+        "listId": "CONFIGURAR_ID_DA_LISTA_TRELLO",
+        "name": "={{ $('Gerar ID da Solicitação').first().json.solicitacao_id + ' | ' + $('Gerar ID da Solicitação').first().json.equipamento_id + ' | ' + $('Gerar ID da Solicitação').first().json['Tipo de Problema'] }}",
+        "description": "={{\n'📋 SOLICITAÇÃO DE MANUTENÇÃO\\n\\n' +\n'Protocolo: ' + $('Gerar ID da Solicitação').first().json.solicitacao_id + '\\n' +\n'Unidade: ' + $('Gerar ID da Solicitação').first().json['Unidade Solicitante'] + '\\n' +\n'Equipamento: ' + $('Gerar ID da Solicitação').first().json['Código do Equipamento'] + '\\n' +\n'Problema: ' + $('Gerar ID da Solicitação').first().json['Tipo de Problema'] + '\\n\\n' +\n'Descrição: ' + $('Gerar ID da Solicitação').first().json['Descrição do Problema'] + '\\n\\n' +\n'Prioridade: ' + $('Gerar ID da Solicitação').first().json.prioridade + '\\n' +\n'Impacto: ' + $('Gerar ID da Solicitação').first().json['Impacto Operacional'] + '\\n\\n' +\n'Solicitante: ' + $('Gerar ID da Solicitação').first().json['Nome do Solicitante'] + '\\n' +\n'E-mail: ' + $('Gerar ID da Solicitação').first().json['E-mail do Solicitante'] + '\\n\\n' +\n'Data de abertura: ' + $('Gerar ID da Solicitação').first().json.data_abertura\n}}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.trello",
+      "typeVersion": 1,
+      "position": [
+        1872,
+        -32
+      ],
+      "id": "1e283730-41a4-4315-baf7-4a6525aa1aaf",
+      "name": "Criar Cartão no Trello"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "CONFIGURAR_ID_DA_PLANILHA",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "solicitacao_id": "={{ $('Gerar ID da Solicitação').first().json.solicitacao_id }}",
+            "trello_card_id": "={{ $('Criar Cartão no Trello').first().json.id }}"
+          },
+          "matchingColumns": [
+            "solicitacao_id"
+          ],
+          "schema": [
+            {
+              "id": "solicitacao_id",
+              "displayName": "solicitacao_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "unidade_id",
+              "displayName": "unidade_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "equipamento_id",
+              "displayName": "equipamento_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "problema_id",
+              "displayName": "problema_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "descricao_problema",
+              "displayName": "descricao_problema",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "nome_solicitante",
+              "displayName": "nome_solicitante",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "email_solicitante",
+              "displayName": "email_solicitante",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "impacto",
+              "displayName": "impacto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "prioridade",
+              "displayName": "prioridade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "data_abertura",
+              "displayName": "data_abertura",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "data_atualizacao",
+              "displayName": "data_atualizacao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "responsavel",
+              "displayName": "responsavel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "resultado_processamento",
+              "displayName": "resultado_processamento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "observacoes",
+              "displayName": "observacoes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "trello_card_id",
+              "displayName": "trello_card_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2096,
+        -32
+      ],
+      "id": "e122b25d-520b-4809-a6ef-97fdf2c087fb",
+      "name": "Atualizar ID do Cartão"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "CONFIGURAR_ID_DA_PLANILHA",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1298772827,
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "solicitacao_id": "={{ $('Gerar ID da Solicitação').first().json.solicitacao_id }}",
+            "email": "={{ $('Gerar ID da Solicitação').first().json['E-mail do Solicitante'] }}",
+            "nome": "={{ $('Gerar ID da Solicitação').first().json['Nome do Solicitante'] }}",
+            "data_inscricao": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "solicitacao_id",
+              "displayName": "solicitacao_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "data_inscricao",
+              "displayName": "data_inscricao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2304,
+        -32
+      ],
+      "id": "e094c12a-2b1c-43e9-8699-f5616401d243",
+      "name": "Registrar Solicitante como Interessado"
+    }
+  ],
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Preparar Dados da Solicitação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Dados da Solicitação": {
+      "main": [
+        [
+          {
+            "node": "Classificar Prioridade",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Verificar Duplicidade",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classificar Prioridade": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar Duplicidade": {
+      "main": [
+        [
+          {
+            "node": "Solicitação Duplicada?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Solicitação Duplicada?": {
+      "main": [
+        [
+          {
+            "node": "Registrar Solicitação Duplicada",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gerar ID da Solicitação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Solicitação Duplicada": {
+      "main": [
+        [
+          {
+            "node": "Notificar Solicitação Duplicada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar Solicitação Duplicada": {
+      "main": [
+        [
+          {
+            "node": "Consultar Interessado Existente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Interessado Existente": {
+      "main": [
+        [
+          {
+            "node": "Interessado Já Cadastrado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Interessado Já Cadastrado?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar ID da Solicitação": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Criar Cartão no Trello",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Cartão no Trello": {
+      "main": [
+        [
+          {
+            "node": "Atualizar ID do Cartão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar ID do Cartão": {
+      "main": [
+        [
+          {
+            "node": "Registrar Solicitante como Interessado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Solicitante como Interessado": {
+      "main": [
+        [
+          {
+            "node": "Confirmar Abertura da Solicitação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "nodeGroups": [],
+  "tags": []
+}

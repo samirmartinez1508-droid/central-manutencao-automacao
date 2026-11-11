@@ -1,0 +1,519 @@
+{
+  "name": "Bootcamp D10 - Sincronização de Status e Notificações de Manutenção",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "95a043da-c6a9-4537-94f5-e88c128da714",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://api.trello.com/1/boards/CONFIGURAR_ID_DO_QUADRO_TRELLO/cards",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "trelloApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "ea10c1a4-0b6d-4a5a-8210-be5bed81ded0",
+      "name": "Consultar Cartões do Trello"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst listas = {\n  'CONFIGURAR_LISTA_A_FAZER': 'A Fazer',\n  'CONFIGURAR_LISTA_EM_ANDAMENTO': 'Em Andamento',\n  'CONFIGURAR_LISTA_AGUARDANDO_PECAS': 'Aguardando Peças',\n  'CONFIGURAR_LISTA_CONCLUIDA': 'Concluída',\n};\n\nreturn $input.all().map(item => {\n  const cartao = item.json;\n  const protocolo = cartao.name.match(/SOL-\\d+-\\d+/)?.[0];\n\n  return {\n    json: {\n      trello_card_id: cartao.id,\n      solicitacao_id: protocolo ?? null,\n      status_trello: listas[cartao.idList] ?? 'Desconhecido',\n      trello_list_id: cartao.idList,\n      trello_card_url: cartao.url\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "1832acd5-ba7c-4ae2-a2c1-c1183c2015fc",
+      "name": "Identificar Status dos Cartões"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "CONFIGURAR_ID_DA_PLANILHA",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "CONFIGURAR_ABA_SOLICITACOES",
+          "mode": "list"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "trello_card_id",
+              "lookupValue": "={{ $json.trello_card_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        0
+      ],
+      "id": "2e202a85-747c-4278-8bcb-85f2d04cb7be",
+      "name": "Consultar Solicitação na Planilha"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "55d6257b-94ff-4996-ba47-f3482ec48376",
+              "leftValue": "={{ $('Identificar Status dos Cartões').item.json.status_trello}}",
+              "rightValue": "={{ $json.status }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        896,
+        0
+      ],
+      "id": "f7ba8b4d-51e7-4432-8498-51469bba6f70",
+      "name": "Status Foi Alterado?"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "CONFIGURAR_ID_DA_PLANILHA",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "CONFIGURAR_ABA_SOLICITACOES",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "solicitacao_id": "={{ $json.solicitacao_id }}",
+            "status": "={{ $('Identificar Status dos Cartões').all().find(item => item.json.trello_card_id === $json.trello_card_id)?.json.status_trello }}",
+            "data_atualizacao": "={{ $now.toISO() }}",
+            "trello_card_id": "={{ $json.trello_card_id }}"
+          },
+          "matchingColumns": [
+            "solicitacao_id"
+          ],
+          "schema": [
+            {
+              "id": "solicitacao_id",
+              "displayName": "solicitacao_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "unidade_id",
+              "displayName": "unidade_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "equipamento_id",
+              "displayName": "equipamento_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "problema_id",
+              "displayName": "problema_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "descricao_problema",
+              "displayName": "descricao_problema",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "nome_solicitante",
+              "displayName": "nome_solicitante",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "email_solicitante",
+              "displayName": "email_solicitante",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "impacto",
+              "displayName": "impacto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "prioridade",
+              "displayName": "prioridade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "data_abertura",
+              "displayName": "data_abertura",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "data_atualizacao",
+              "displayName": "data_atualizacao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "responsavel",
+              "displayName": "responsavel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "resultado_processamento",
+              "displayName": "resultado_processamento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "observacoes",
+              "displayName": "observacoes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "trello_card_id",
+              "displayName": "trello_card_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1168,
+        -288
+      ],
+      "id": "29b3351c-17d7-470e-b600-48413389f5fd",
+      "name": "Atualizar Status da Solicitação"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "CONFIGURAR_ID_DA_PLANILHA",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "CONFIGURAR_ABA_INTERESSADOS",
+          "mode": "list"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "solicitacao_id",
+              "lookupValue": "={{ $json.solicitacao_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1360,
+        -288
+      ],
+      "id": "a8f7f971-7030-4a57-a96e-de92cf4dea22",
+      "name": "Consultar Interessados da Solicitação",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst interessados = $input.all().map(item => item.json);\n\nconst solicitacoes = $('Status Foi Alterado?')\n  .all(0)\n  .map(item => item.json);\n\nconst cartoes = $('Identificar Status dos Cartões')\n  .all()\n  .map(item => item.json);\n\nconst resultados = [];\n\nfor (const solicitacao of solicitacoes) {\n  const cartao = cartoes.find(\n    item => String(item.trello_card_id) ===\n      String(solicitacao.trello_card_id)\n  );\n\n  if (!cartao) {\n    throw new Error(\n      `Cartão não encontrado: ${solicitacao.solicitacao_id}`\n    );\n  }\n\n  const statusAnterior = String(solicitacao.status ?? '').trim();\n  const statusNovo = String(cartao.status_trello ?? '').trim();\n\n  // Não notificar quando o status permanece igual\n  if (statusAnterior === statusNovo) {\n    continue;\n  }\n\n  const destinatarios = new Map();\n\n  function adicionar(email, nome) {\n    const endereco = String(email ?? '').trim().toLowerCase();\n\n    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(endereco)) {\n      return;\n    }\n\n    if (!destinatarios.has(endereco)) {\n      destinatarios.set(endereco, nome || 'Solicitante');\n    }\n  }\n\n  // Solicitante original\n  adicionar(\n    solicitacao.email_solicitante,\n    solicitacao.nome_solicitante\n  );\n\n  // Interessados vinculados a esta solicitação\n  for (const pessoa of interessados) {\n    if (\n      String(pessoa.solicitacao_id) ===\n      String(solicitacao.solicitacao_id)\n    ) {\n      adicionar(pessoa.email, pessoa.nome);\n    }\n  }\n\n  for (const [email, nome] of destinatarios) {\n    resultados.push({\n      json: {\n        solicitacao_id: solicitacao.solicitacao_id,\n        email,\n        nome,\n        status_anterior: statusAnterior,\n        status_novo: statusNovo\n      }\n    });\n  }\n}\n\nreturn resultados;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1552,
+        -288
+      ],
+      "id": "eb21eb0b-d0b0-4921-b68b-d77060f1ff1b",
+      "name": "Preparar Destinatários da Notificação"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "={{ 'Atualização da solicitação — ' + $json.solicitacao_id }}",
+        "message": "= <h2>🔧 Central de Manutenção</h2>  <p>Olá, {{ $json.nome }}!</p>  <p>A solicitação de manutenção que você acompanha teve uma atualização.</p>  <p><strong>Protocolo:</strong> {{ $json.solicitacao_id }}</p>  <p><strong>Status anterior:</strong> {{ $json.status_anterior }}</p>  <p><strong>Novo status:</strong> {{ $json.status_novo }}</p>  <p>Você receberá novas notificações quando houver mudanças no andamento da solicitação.</p>  <hr> <p><small>Mensagem automática — Central de Manutenção</small></p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1760,
+        -288
+      ],
+      "id": "1b7ee3b9-9382-45e5-a9e1-5211d46cdc60",
+      "name": "Notificar Atualização da Solicitação"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1008,
+        -384
+      ],
+      "id": "74c970ef-b1a5-4d00-a27a-b6a7ea45bc7d",
+      "name": "Loop Over Items"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Consultar Cartões do Trello",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Cartões do Trello": {
+      "main": [
+        [
+          {
+            "node": "Identificar Status dos Cartões",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Identificar Status dos Cartões": {
+      "main": [
+        [
+          {
+            "node": "Consultar Solicitação na Planilha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Solicitação na Planilha": {
+      "main": [
+        [
+          {
+            "node": "Status Foi Alterado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Status Foi Alterado?": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar Status da Solicitação": {
+      "main": [
+        [
+          {
+            "node": "Consultar Interessados da Solicitação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Interessados da Solicitação": {
+      "main": [
+        [
+          {
+            "node": "Preparar Destinatários da Notificação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Destinatários da Notificação": {
+      "main": [
+        [
+          {
+            "node": "Notificar Atualização da Solicitação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Atualizar Status da Solicitação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar Atualização da Solicitação": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  }
+}
