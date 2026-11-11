@@ -10,6 +10,16 @@ Sistema de automação para registrar solicitações de manutenção, evitar abe
 
 O acompanhamento manual de solicitações de manutenção pode dispersar informações entre formulários, planilhas, quadros de tarefas e e-mails. O projeto reúne essas etapas em dois workflows complementares para reduzir a necessidade de lançamentos e conferências manuais.
 
+## Visualização dos workflows
+
+### D9 — Abertura de Solicitações
+
+![Workflow D9 — Abertura de Solicitações](assets/workflow-d9.png)
+
+### D10 — Acompanhamento e Notificações
+
+![Workflow D10 — Acompanhamento e Notificações](assets/workflow-d10.png)
+
 ## Arquitetura
 
 ```text
